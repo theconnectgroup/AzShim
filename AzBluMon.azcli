@@ -2,7 +2,7 @@
 # Author: Justin Kikani 
 # Initial Release: 5/18/2022
 # Last Modified: 2/8/2023
-# Version: 1.2.0
+# Version: 1.2.1
 # Release Notes: This script has been modified to be re-runnable, in that it will
 # detect if this script has been run before. If so, it will simply modify settings
 # rather than create resources. 
@@ -81,6 +81,7 @@ else
             --name "$myEventHubName-$myLocation" \
             --namespace-name "$myEventHubNamespace-$myLocation" \
             --resource-group $bluRG \
+            --partition-count 2 \
             --message-retention 1 \
             --output none
 
