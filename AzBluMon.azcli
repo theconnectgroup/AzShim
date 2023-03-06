@@ -1,3 +1,4 @@
+
 #!/bin/bash
 # Author: Justin Kikani 
 # Initial Release: 5/18/2022
@@ -39,17 +40,18 @@ if [ $(az group exists -n $bluRG) = true ]; then
     echo "This appears to be a secondary run, validating and enabling logging configurations without changing resource groups or resources."
 
     # Get the location ID from the namespace(s) and then get the namespaces
-    locations=$(az resource list --g $bluRG --query "[].location" -o tsv | awk -F '\t' '{print $1}' | sort -u)
+    locations=$(az resource list -g $bluRG --query "[].location" -o tsv | awk -F '\t' '{print $1}' | sort -u)
     myLocations=($(echo $locations | tr " " "\n"))
     nameSpaceList=$(az eventhubs namespace list -g $bluRG --query "[].name" -o tsv | awk -F '\t' '{print $1}' | sort -u)
     myNameSpaces=($(echo $nameSpaceList | tr " " "\n"))
-    echo $myNameSpaces
 
     # Loop through the locations to apply settings
     for myLocation in "${myLocations[@]}"; do
         for nameSpace in "${myNameSpaces[@]}"; do
-            if [[ $myLocation == *"$nameSpace"* ]]; then
-                myRuleID=$(az eventhubs namespace authorization-rule show --name "RootManageSharedAccessKey" --resource-group $bluRG --namespace-name $nameSpace --query "id" -o tsv)
+            myNameSpaceLoc=${nameSpace##*-}
+            if [[ $myLocation == $myNameSpaceLoc ]]; then
+                echo "Updating resource at $myLocation"
+                myRuleID=$(az eventhubs namespace authorization-rule show --name "RootManageSharedAccessKey" -g $bluRG --namespace-name $nameSpace --query "id" -o tsv)
                 # Loop through each Resource Group in the subscription
                 for resourceGroup in "${myResourceGroups[@]}"; do
                     # Set diagnostic settings for all resources in the resource group to the previously created event hub
@@ -138,6 +140,7 @@ if [ $(az group exists -n $bluRG) = true ]; then
             fi
         done
     done
+    echo "Operations have completed. Your resources' diagnostic settings have been updated."
 else
     # Get the location id from the subscription
     locations=$(az resource list --query "[].location" -o tsv | awk -F '\t' '{print $1}' | sort -u)
@@ -178,10 +181,14 @@ else
             --partition-count 2 \
             --message-retention 1 \
             --output none
+        
+        echo "Waiting 60s for Event Hub Creation"
+        sleep 60s
 
         # Set SAS Auth and Rules for Event Hub Listener, this is what the sensor uses
-        az eventhubs namespace authorization-rule create \
+        az eventhubs eventhub authorization-rule create \
             --name "LogsToBlumira" \
+            --eventhub-name "$myEventHubName-$myLocation" \
             --namespace-name "$myEventHubNamespace-$myLocation" \
             --resource-group $bluRG \
             --rights Listen \
@@ -297,10 +304,11 @@ else
     echo 'You will need the Primary Connection String and the Event Hub name to copy and paste in the sensor module within Blumira.'
     for myLocation in "${myLocations[@]}"; do
         echo 'Primary Connection String'
-        az eventhubs namespace authorization-rule keys list \
-        --resource-group $bluRG \
-        --namespace-name "$myEventHubNamespace-$myLocation" \
-        --name "LogsToBlumira" --query "primaryConnectionString" -o tsv
+        az eventhubs eventhub authorization-rule keys list \
+            --resource-group $bluRG \
+            --eventhub-name "$myEventHubName-$myLocation" \
+            --namespace-name "$myEventHubNamespace-$myLocation" \
+            --name "LogsToBlumira" --query "primaryConnectionString" -o tsv
         # Output event hub name for end-user to copy and use within Blumira
         echo 'Event Hub Name'
         echo "$myEventHubName-$myLocation"
