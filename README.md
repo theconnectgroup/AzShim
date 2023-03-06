@@ -23,7 +23,7 @@ chmod +x ./AzBluMon.azcli
 ```
 Once the script has started to run, you will be presented with the first prompt for Subscription ID. This can be found by navigating to https://portal.azure.com/#view/Microsoft_Azure_Billing/SubscriptionsBlade from this screen you'll be able to copy the Subscription ID and paste it into the terminal. Don't be afraid about changing screens the terminal window will not disappear.
 
-After typing in or copying and pasting the Subscription ID, the script will ask you for a location or region ID. These are single simple strings that designate where the Event Hub and Namespace will be deployed. I'd recommend setting this to whereever your resources are located. A list can be found of these but for example some are `eastus`,`eastus2`,`centralus`,`westus`, and many more. The list for these region codes can be found at this link (the name column are the compatible codes) https://azuretracks.com/2021/04/current-azure-region-names-reference/.
+The first input required is your subscription ID which can be found on your Subscription blade.
 
 The next input required is a unique name for the Event Hub Namespace. This must be unique across all Azure instances, if the creation of this resource fails the rest of the script will continue to error out and you'll need to restart the script by running the code block above once more. Before restarting the script run it is required to delete the newly created Blumira resource group. To do so run `az group delete --name blu-eventhub-rg`, when prompted type in `Y` and click `Enter`.
 
