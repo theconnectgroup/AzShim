@@ -1,9 +1,8 @@
-
 #!/bin/bash
 # Author: Justin Kikani 
 # Initial Release: 5/18/2022
-# Last Modified: 2/8/2023
-# Version: 1.2.5
+# Last Modified: 6/1/2023
+# Version: 1.3.0
 # Release Notes: This script has been modified to be re-runnable, in that it will
 # detect if this script has been run before. If so, it will simply modify settings
 # rather than create resources. 
@@ -21,16 +20,23 @@ myEventHubName="blueventhub"
 # Have user login to their tenant, uncomment below line if running from local Azure CLI instance
 #az login
 
+echo -e '\n'
+echo 'Welcome to Blumira Azure Monitor!'
+echo 'Please note, this script is intended for North American regions only.'
+echo -e '\n'
+
 # Get Subscription ID from user 
 echo 'What is your Subscription ID? This can be found at https://portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade copy and paste the link in a new browser tab.'
 read mySubscriptionID
 
 # Set the Subscription that you'll be working with by ID, more reliable than name
 az account set \
-    --name $mySubscriptionID
+    --name $mySubscriptionID \
+    > /dev/null
 
 #Register Microsoft.Insights resource provider, won't hurt to re-run if it already is registered
-az provider register --namespace 'microsoft.insights'
+az provider register --namespace 'microsoft.insights' \
+    > /dev/null
 
 # Get resource groups
 myResourceGroups=($(az group list --query "[].name" -o tsv))
@@ -87,7 +93,8 @@ if [ $(az group exists -n $bluRG) = true ]; then
                                         --event-hub "$myEventHubName-$myLocation" \
                                         --event-hub-rule $myRuleID \
                                         --logs @./temp.json \
-                                        --output none
+                                        --output none \
+                                        > /dev/null
                                 done
                                 ;;
                             microsoft.devtestlab/schedules)
@@ -131,7 +138,8 @@ if [ $(az group exists -n $bluRG) = true ]; then
                                         --event-hub "$myEventHubName-$myLocation" \
                                         --event-hub-rule $myRuleID \
                                         --logs @./temp.json \
-                                        --output none
+                                        --output none \
+                                        > /dev/null
                                 fi
                                 ;;
                         esac
@@ -165,7 +173,8 @@ else
             --location $myLocation \
             --sku Basic \
             --capacity 1 \
-            --enable-auto-inflate false
+            --enable-auto-inflate false \
+            > /dev/null
 
         # Give time for Azure to enumerate event hub namespace
         echo "Waiting 60s for Namespace creation..."
@@ -179,8 +188,10 @@ else
             --namespace-name "$myEventHubNamespace-$myLocation" \
             --resource-group $bluRG \
             --partition-count 2 \
-            --message-retention 1 \
-            --output none
+            --cleanup-policy Delete \
+            --retention-time-in-hours 1 \
+            --output none \
+            > /dev/null
         
         echo "Waiting 60s for Event Hub Creation"
         sleep 60s
@@ -192,7 +203,8 @@ else
             --namespace-name "$myEventHubNamespace-$myLocation" \
             --resource-group $bluRG \
             --rights Listen \
-            --output none
+            --output none \
+            > /dev/null
         
         # Get and store the authorization ID for the rootManagedShareKey rule for continued setup of resources
         myRuleID=$(az eventhubs namespace authorization-rule show --name "RootManageSharedAccessKey" --resource-group $bluRG --namespace-name "$myEventHubNamespace-$myLocation" --query "id" -o tsv)
@@ -234,7 +246,8 @@ else
                                 --event-hub "$myEventHubName-$myLocation" \
                                 --event-hub-rule $myRuleID \
                                 --logs @./temp.json \
-                                --output none
+                                --output none \
+                                > /dev/null
                         done
                         ;;
                     microsoft.devtestlab/schedules)
@@ -278,7 +291,8 @@ else
                                 --event-hub "$myEventHubName-$myLocation" \
                                 --event-hub-rule $myRuleID \
                                 --logs @./temp.json \
-                                --output none
+                                --output none \
+                                > /dev/null
                         fi
                         ;;
                 esac
@@ -296,21 +310,22 @@ else
         --event-hub-name "$myEventHubName-${myLocations[0]}" \
         --event-hub-auth-rule $myRuleID \
         --logs '[{"category": "Security","enabled": true},{"category": "Administrative","enabled": true},{"category": "ServiceHealth","enabled": true},{"category": "Alert","enabled": true},{"category": "Recommendation","enabled": true},{"category": "Policy","enabled": true},{"category": "Autoscale","enabled": true},{"category": "ResourceHealth","enabled": true}]' \
-        --output none
+        --output none \
+        > /dev/null
 
     # Output primary connection string for end-user to copy and use within Blumira
     echo '******************************************************************'
     echo '******************************************************************'
     echo 'You will need the Primary Connection String and the Event Hub name to copy and paste in the sensor module within Blumira.'
     for myLocation in "${myLocations[@]}"; do
-        echo 'Primary Connection String'
+        echo 'Primary Connection String:'
         az eventhubs eventhub authorization-rule keys list \
             --resource-group $bluRG \
             --eventhub-name "$myEventHubName-$myLocation" \
             --namespace-name "$myEventHubNamespace-$myLocation" \
             --name "LogsToBlumira" --query "primaryConnectionString" -o tsv
         # Output event hub name for end-user to copy and use within Blumira
-        echo 'Event Hub Name'
+        echo 'Event Hub Name:'
         echo "$myEventHubName-$myLocation"
         echo '******************************************************************'
     done
