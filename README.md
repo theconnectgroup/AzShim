@@ -1,5 +1,5 @@
 # AzShim
-Automate the deployment of Azure Monitor Diagnostic Settings for the integration with Blumira SIEM. For additional information regarding Blumira's eventhubs information please see, https://blumira.zendesk.com/hc/en-us/articles/4854089610643-Integrating-with-Microsoft-Azure-Event-Hubs#01FYS6Z0F1SG9GZFX1J6A1CGJ2.
+Automate the deployment of Azure Monitor Diagnostic Settings for the integration with Blumira SIEM. For additional information regarding Blumira's eventhubs information please see, https://blumira.help/azure.
 
 ## Pre-requisites
 This script assumes the following:
@@ -21,7 +21,7 @@ cd ./AzShim
 chmod +x ./AzShim.azcli
 ./AzShim.azcli -c
 ```
-Once the script has started to run, it will deploy resources to all valid subscriptions that you are listed as a contributor or higher to.
+Once the script has started to run, it will deploy resources to all valid subscriptions that you are listed as a contributor or higher to. This script can take upwards of 10 minutes to complete for larger environments.
 
 ## Closing Out
 This script is still being worked on, in the future I hope to have a subscription selector further reducing the the need for manual input and I need to account for more resources that do not support the `Log` category in Azure Monitor Diagnostic Settings.
