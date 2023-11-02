@@ -1,4 +1,4 @@
-# AzBluMon
+# AzShim
 Automate the deployment of Azure Monitor Diagnostic Settings for the integration with Blumira SIEM. For additional information regarding Blumira's eventhubs information please see, https://blumira.zendesk.com/hc/en-us/articles/4854089610643-Integrating-with-Microsoft-Azure-Event-Hubs#01FYS6Z0F1SG9GZFX1J6A1CGJ2.
 
 ## Pre-requisites
@@ -16,16 +16,12 @@ Before running the script it is recommended that you set up or configure Azure C
 To get started copy and paste the following into your Azure Cloud Shell terminal window. The following commands clone the repo, place you in the directory, set the script to have the proper permissions to run, and finally run the script.
 
 ```Bash
-git clone https://github.com/Blumira/AzBluMon.git
-cd ./AzBluMon
-chmod +x ./AzBluMon.azcli
-./AzBluMon.azcli
+git clone https://github.com/Blumira/AzShim.git
+cd ./AzShim
+chmod +x ./AzShim.azcli
+./AzShim.azcli -c
 ```
-Once the script has started to run, you will be presented with the first prompt for Subscription ID. This can be found by navigating to https://portal.azure.com/#view/Microsoft_Azure_Billing/SubscriptionsBlade from this screen you'll be able to copy the Subscription ID and paste it into the terminal. Don't be afraid about changing screens the terminal window will not disappear.
-
-The first input required is your subscription ID which can be found on your Subscription blade.
-
-The next input required is a unique name for the Event Hub Namespace. This must be unique across all Azure instances, if the creation of this resource fails the rest of the script will continue to error out and you'll need to restart the script by running the code block above once more. Before restarting the script run it is required to delete the newly created Blumira resource group. To do so run `az group delete --name blu-eventhub-rg`, when prompted type in `Y` and click `Enter`.
+Once the script has started to run, it will deploy resources to all valid subscriptions that you are listed as a contributor or higher to.
 
 ## Closing Out
 This script is still being worked on, in the future I hope to have a subscription selector further reducing the the need for manual input and I need to account for more resources that do not support the `Log` category in Azure Monitor Diagnostic Settings.
