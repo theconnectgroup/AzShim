@@ -1,8 +1,8 @@
 #!/bin/bash
 # Author: Justin Kikani 
 # Initial Release: 5/18/2022
-# Last Modified: 11/2/2023
-# Version: 2.0.0
+# Last Modified: 11/14/2023
+# Version: 2.0.1
 # Release Notes: Modularizing the script, adding in functions for configuration and removal. 
 # Making the creation process smoother and faster overall. Reducing the amount of loops.
 # Eventhubs namespace and other related commands will come out of preview in nov release, 
@@ -42,7 +42,11 @@ function ConfigureResources() {
     
     # Creating Unique Resource Group
     echo "Creating resouce group using epoch for uniqueness."
-    az group create --location ${myLocations[0]} --name "${myResourceGroup}-${myEpoch}" -o table
+    # Bypass the global region which appears to be always in the first element
+    if[[ ${myLocations[0]} == "global" ]]; then
+        az group create --location ${myLocations[1]} --name "${myResourceGroup}-${myEpoch}" -o table
+    else
+        az group create --location ${myLocations[0]} --name "${myResourceGroup}-${myEpoch}" -o table
 
     # Create a eventhub namespace for each region found
     for myLocation in "${myLocations[@]}"; do
