@@ -43,7 +43,7 @@ function ConfigureResources() {
     # Creating Unique Resource Group
     echo "Creating resouce group using epoch for uniqueness."
     # Bypass the global region which appears to be always in the first element
-    if[[ ${myLocations[0]} == "global" ]]; then
+    if [[ ${myLocations[0]} == "global" ]]; then
         az group create --location ${myLocations[1]} --name "${myResourceGroup}-${myEpoch}" -o table
     else
         az group create --location ${myLocations[0]} --name "${myResourceGroup}-${myEpoch}" -o table
