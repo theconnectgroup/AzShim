@@ -1,7 +1,7 @@
 #!/bin/bash
 # Author: Justin Kikani 
 # Initial Release: 5/18/2022
-# Last Modified: 11/14/2023
+# Last Modified: 11/22/2023
 # Version: 2.0.1
 # Release Notes: Modularizing the script, adding in functions for configuration and removal. 
 # Making the creation process smoother and faster overall. Reducing the amount of loops.
@@ -47,6 +47,7 @@ function ConfigureResources() {
         az group create --location ${myLocations[1]} --name "${myResourceGroup}-${myEpoch}" -o table
     else
         az group create --location ${myLocations[0]} --name "${myResourceGroup}-${myEpoch}" -o table
+    fi
 
     # Create a eventhub namespace for each region found
     for myLocation in "${myLocations[@]}"; do
