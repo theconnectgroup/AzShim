@@ -26,7 +26,7 @@ mySubscriptionIds=($(echo $tempSubList | tr " " "\n"))
 function Help() {
     echo "AzShim is an automated deployment tool for configuring your Azure environment for Blumira."
     echo "WARNING! THIS SCRIPT USES THE DATE/TIME FOR NAMESPACING RESOURCES"
-    echo "Valid syntax will include AzShim.sh -h|-c|-u"
+    echo "Valid syntax will include AzShim.sh -h|-c"
     echo "For support please contact support@blumira.com"
 }
 
