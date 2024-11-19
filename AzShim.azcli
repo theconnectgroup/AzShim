@@ -219,25 +219,8 @@ function SetDiagnosticSettings() {
     done
 }
 
-function Uninstall() {
-    identifier=${1}
-    # Remove diagnostic settings and need to remove any other items
-    # This section needs some work disabling for now
-    #temp=$(az resource list --query "[].id" -o tsv | awk -F '\t' '{print $1}' | sort -u)
-    #allMyResources=($(echo $temp | tr " " "\n"))
-    #for resource in "${allMyResources[@]}"; do
-    #    echo az monitor diagnostic-settings delete --name $(az monitor diagnostic-settings list --resource ${resource} --query "[?contains(name, '${identifier}')].name" -o tsv) --resource ${resource} \
-    #       > /dev/null 2>&1
-    #done
-    myResources=$(az resource list --query "[?contains(name, '${identifier}')].id" -o tsv)
-    az resource delete --ids ${myResources} \
-        > /dev/null 2>&1
-    az group delete --name ${myResourceGroup}-${identifier} --yes \
-        > /dev/null 2>&1
-}
-
 # Main function
-while getopts ":hcut" option; do
+while getopts ":hct" option; do
     case $option in
     h) # Display Help
         Help
@@ -266,25 +249,6 @@ while getopts ":hcut" option; do
         echo "End time:: ${endDateTime}"
         echo -e "\n"
         echo "To remove any created resources use the following command: ./AzShim.azcli -u ${myEpoch}"
-        exit;;
-    u)
-        startDateTime=$(date)
-        echo "Removing Blumira resources from your Azure Subscriptions"
-        for mySubscriptionId in "${mySubscriptionIds[@]}"; do
-            echo ${mySubscriptionId}
-            echo "^ This is the current active subscription that resources will be deleted from. ^"
-            echo "********************************************************************************"
-            echo "You will manually have to remove the diagnostic settings for resources under the"
-            echo 'following url: https://portal.azure.com/#view/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/~/diagnosticsLogs'
-            # Set the Subscription that you'll be working with by ID, more reliable than name
-            az account set \
-                --name ${mySubscriptionId} \
-                > /dev/null
-            Uninstall ${2}
-        done
-        endDateTime=$(date)
-        echo "Start time: ${startDateTime}"
-        echo "End time:: ${endDateTime}"
         exit;;
     t) # Testing
         exit;;
