@@ -145,7 +145,7 @@ function SimpleSetup() {
 }
 
 # Main function
-while getopts ":hcst" option; do
+while getopts ":hct" option; do
     case $option in
     h) # Display Help
         Help
