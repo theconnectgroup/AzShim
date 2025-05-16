@@ -1,4 +1,4 @@
-# AzShim
+# Connect AzShim
 Automate the deployment of Azure Monitor Diagnostic Settings for the integration with Blumira SIEM. For additional information regarding Blumira's eventhubs information please see, https://blumira.help/azure.
 
 ## Pre-requisites
@@ -12,10 +12,11 @@ Before running the script it is recommended that you set up or configure Azure C
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/2pQr-w8ZiYU/0.jpg)](http://www.youtube.com/watch?v=2pQr-w8ZiYU)
 
 ## Cloning the Repo and Running the Script
-To get started copy and paste the following into your Azure Cloud Shell terminal window. The following commands clone the repo, place you in the directory, set the script to have the proper permissions to run, and finally run the script.
+To get started, open the bash file and edit the Resource Group, Eventhub, and EventHub NameSpace Name Variables, Save and Commit to the Main Branch. 
+Next past the following into your Azure Cloud Shell terminal window. The following commands clone the repo, place you in the directory, set the script to have the proper permissions to run, and finally run the script.
 
 ```Bash
-git clone https://github.com/Blumira/AzShim.git
+git clone https://github.com/theconnectgroup/AzShim.git
 cd ./AzShim
 chmod +x ./AzShim.azcli
 ./AzShim.azcli -c
