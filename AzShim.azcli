@@ -53,22 +53,17 @@ function SimpleSetup() {
                     > /dev/null
             # Register Microsoft.Insights resource provider, won't hurt to re-run if it already is registered
             echo "Getting list of location codes in use within subscription. Please select a number from the list:"
-            locations=($(az resource list --query "[?location != 'global'].location" -o tsv | sort | uniq))
-            select location in ${locations[@]}; do
-                if [ -z "$location" ]; then
-                    echo "Invalid option $REPLY, please select a valid option"
-                    continue
-                fi
+            location="westus"
                 case $location in
                 [A-Za-z]*)
                     az provider register --namespace 'microsoft.insights' \
                     > /dev/null
-                    echo "Creating resouce group using epoch for uniqueness."
-                    az group create --location ${location} --name "${myResourceGroup}-${myEpoch}" -o table
+                    echo "Creating resouce group."
+                    az group create --location ${location} --name "${myResourceGroup}" -o table
                     echo "Creating Namespace..."
                     az eventhubs namespace create \
-                        --name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                        --resource-group "${myResourceGroup}-${myEpoch}" \
+                        --name "${myEventHubNameSpace}" \
+                        --resource-group "${myResourceGroup}" \
                         --location ${location} \
                         --sku Basic \
                         --capacity 1 \
@@ -81,7 +76,7 @@ function SimpleSetup() {
                     echo "Creating Event Hub and Authorization Rule under the event hub..."
                     # Create the Azure Event Hub
                     az eventhubs eventhub create \
-                        --name "${myEventHubName}-${location}-${myEpoch}" \
+                        --name "${myEventHubName}-${location}-${myE" \
                         --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
                         --resource-group "${myResourceGroup}-${myEpoch}" \
                         --partition-count 2 \
