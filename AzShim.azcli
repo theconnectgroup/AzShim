@@ -38,99 +38,86 @@ function Help() {
 # This function is just to set up one event hub in one location and configure it for az subscription level logs 
 # and output the event hub string and creds for configuration in Blumira
 function SimpleSetup() {
-    # IFS being used to not have the list separated by spaces
     IFS=$'\n' subNameList=($(az account show --query "[name]" -o tsv))
     echo 'Please select a subscription by choosing the number that corresponds to your selection:'
-    select subscription in ${subNameList[@]}; do
+    select subscription in "${subNameList[@]}"; do
         if [ -z "$subscription" ]; then
             echo "Invalid option $REPLY, please select a valid option"
             continue
         fi
+
         case $subscription in
         *[[:alnum:]]*)
-            az account set \
-                    --name ${subscription} \
-                    > /dev/null
-            # Register Microsoft.Insights resource provider, won't hurt to re-run if it already is registered
+            az account set --name "${subscription}" > /dev/null
             echo "Getting list of location codes in use within subscription. Please select a number from the list:"
             location="westus"
-                az provider register --namespace 'microsoft.insights' \
-                > /dev/null
-                echo "Creating resouce group."
-                az group create --location ${location} --name "${myResourceGroup}" -o table
-                echo "Creating Namespace..."
-                az eventhubs namespace create \
-                    --name "${myEventHubNameSpace}" \
-                    --resource-group "${myResourceGroup}" \
-                    --location ${location} \
-                    --sku Basic \
-                    --capacity 1 \
-                    --enable-auto-inflate false \
-                    > /dev/null 2>&1
-                # Give time for Azure to enumerate event hub namespace
-                echo "Waiting 30s for Namespace creation..."
-                sleep 30s
+            startDateTime=$(date)
+            myEpoch=$(date -d "${startDateTime}" +"%s")
 
-                echo "Creating Event Hub and Authorization Rule under the event hub..."
-                # Create the Azure Event Hub
-                az eventhubs eventhub create \
-                    --name "${myEventHubName}-${location}-${myEpoch}" \
-                    --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                    --resource-group "${myResourceGroup}-${myEpoch}" \
-                    --partition-count 2 \
-                    --cleanup-policy Delete \
-                    --retention-time-in-hours 1 \
-                    --output none \
-                    > /dev/null 2>&1
-                
-                    echo "Waiting 30s for Event Hub Creation"
-                    sleep 30s
+            az provider register --namespace 'microsoft.insights' > /dev/null
+            echo "Creating resource group."
+            az group create --location "${location}" --name "${myResourceGroup}-${myEpoch}" -o table
 
-                    # Set SAS Auth and Rules for Event Hub Listener, this is what the sensor uses
-                    az eventhubs eventhub authorization-rule create \
-                        --name "LogsToBlumira-${myEpoch}" \
-                        --eventhub-name "${myEventHubName}-${location}-${myEpoch}" \
-                        --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                        --resource-group "${myResourceGroup}-${myEpoch}" \
-                        --rights Listen \
-                        --output none \
-                        > /dev/null 2>&1
-                    
-                    # Output primary connection string for end-user to copy and use within Blumira
-                    echo '******************************************************************'
-                    echo '******************************************************************'
-                    echo 'You will need the Primary Connection String and the Event Hub name to copy and paste in the sensor module within Blumira.'
-                    echo 'Primary Connection String:'
-                    az eventhubs eventhub authorization-rule keys list \
-                        --resource-group ${myResourceGroup}-${myEpoch} \
-                        --eventhub-name "${myEventHubName}-${location}-${myEpoch}" \
-                        --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                        --name "LogsToBlumira-${myEpoch}" --query "primaryConnectionString" -o tsv
-                    # Output event hub name for end-user to copy and use within Blumira
-                    echo 'Event Hub Name:'
-                    echo "${myEventHubName}-${location}-${myEpoch}"
-                    echo '******************************************************************'
-                    echo '******************************************************************'
-                    # Configure the subscription level activity logging/platform logging
-                    
-                    # Re-get the authrule for starting namespace
-                    # For whatever reason the eventhub name was dereferencing
-                    # Update 10.27.23: Dereferencing doesn't appear to be happening anymore
-                    mySubRuleID=$(az eventhubs namespace authorization-rule show --name "RootManageSharedAccessKey" --resource-group "${myResourceGroup}-${myEpoch}" --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" --query "id" -o tsv)
+            echo "Creating Namespace..."
+            az eventhubs namespace create \
+                --name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --location "${location}" \
+                --sku Basic \
+                --capacity 1 \
+                --enable-auto-inflate false > /dev/null 2>&1
 
-                    # Create diagnostic settings for Azure Subscription that was specified by the user
-                    az monitor diagnostic-settings subscription create \
-                        --name "BlumiraDiagSetting-${myEpoch}" \
-                        --location ${location} \
-                        --event-hub-name "${myEventHubName}-${location}-${myEpoch}" \
-                        --event-hub-auth-rule ${mySubRuleID} \
-                        --logs '[{"category": "Security","enabled": true},{"category": "Administrative","enabled": true},{"category": "ServiceHealth","enabled": true},{"category": "Alert","enabled": true},{"category": "Recommendation","enabled": true},{"category": "Policy","enabled": true},{"category": "Autoscale","enabled": true},{"category": "ResourceHealth","enabled": true}]' \
-                        --output none \
-                        > /dev/null
-                    ;;
-                esac
-                break
-            done
+            echo "Waiting 30s for Namespace creation..."
+            sleep 30s
+
+            echo "Creating Event Hub and Authorization Rule under the event hub..."
+            az eventhubs eventhub create \
+                --name "${myEventHubName}-${location}-${myEpoch}" \
+                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --partition-count 2 \
+                --cleanup-policy Delete \
+                --retention-time-in-hours 1 \
+                --output none > /dev/null 2>&1
+
+            echo "Waiting 30s for Event Hub Creation"
+            sleep 30s
+
+            az eventhubs eventhub authorization-rule create \
+                --name "LogsToBlumira-${myEpoch}" \
+                --eventhub-name "${myEventHubName}-${location}-${myEpoch}" \
+                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --rights Listen \
+                --output none > /dev/null 2>&1
+
+            echo '******************************************************************'
+            echo 'You will need the Primary Connection String and the Event Hub name to copy and paste in the sensor module within Blumira.'
+            echo 'Primary Connection String:'
+            az eventhubs eventhub authorization-rule keys list \
+                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --eventhub-name "${myEventHubName}-${location}-${myEpoch}" \
+                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                --name "LogsToBlumira-${myEpoch}" --query "primaryConnectionString" -o tsv
+
+            echo 'Event Hub Name:'
+            echo "${myEventHubName}-${location}-${myEpoch}"
+            echo '******************************************************************'
+
+            mySubRuleID=$(az eventhubs namespace authorization-rule show \
+                --name "RootManageSharedAccessKey" \
+                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                --query "id" -o tsv)
+
+            az monitor diagnostic-settings subscription create \
+                --name "BlumiraDiagSetting-${myEpoch}" \
+                --location "${location}" \
+                --event-hub-name "${myEventHubName}-${location}-${myEpoch}" \
+                --event-hub-auth-rule "${mySubRuleID}" \
+                --logs '[{"category": "Security","enabled": true},{"category": "Administrative","enabled": true},{"category": "ServiceHealth","enabled": true},{"category": "Alert","enabled": true},{"category": "Recommendation","enabled": true},{"category": "Policy","enabled": true},{"category": "Autoscale","enabled": true},{"category": "ResourceHealth","enabled": true}]' \
+                --output none > /dev/null
+            ;;
         esac
         break
     done
