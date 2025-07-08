@@ -54,37 +54,35 @@ function SimpleSetup() {
             # Register Microsoft.Insights resource provider, won't hurt to re-run if it already is registered
             echo "Getting list of location codes in use within subscription. Please select a number from the list:"
             location="westus"
-                case $location in
-                [A-Za-z]*)
-                    az provider register --namespace 'microsoft.insights' \
-                    > /dev/null
-                    echo "Creating resouce group."
-                    az group create --location ${location} --name "${myResourceGroup}" -o table
-                    echo "Creating Namespace..."
-                    az eventhubs namespace create \
-                        --name "${myEventHubNameSpace}" \
-                        --resource-group "${myResourceGroup}" \
-                        --location ${location} \
-                        --sku Basic \
-                        --capacity 1 \
-                        --enable-auto-inflate false \
-                        > /dev/null 2>&1
-                    # Give time for Azure to enumerate event hub namespace
-                    echo "Waiting 30s for Namespace creation..."
-                    sleep 30s
+                az provider register --namespace 'microsoft.insights' \
+                > /dev/null
+                echo "Creating resouce group."
+                az group create --location ${location} --name "${myResourceGroup}" -o table
+                echo "Creating Namespace..."
+                az eventhubs namespace create \
+                    --name "${myEventHubNameSpace}" \
+                    --resource-group "${myResourceGroup}" \
+                    --location ${location} \
+                    --sku Basic \
+                    --capacity 1 \
+                    --enable-auto-inflate false \
+                    > /dev/null 2>&1
+                # Give time for Azure to enumerate event hub namespace
+                echo "Waiting 30s for Namespace creation..."
+                sleep 30s
 
-                    echo "Creating Event Hub and Authorization Rule under the event hub..."
-                    # Create the Azure Event Hub
-                    az eventhubs eventhub create \
-                        --name "${myEventHubName}-${location}-${myEpoch}" \
-                        --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                        --resource-group "${myResourceGroup}-${myEpoch}" \
-                        --partition-count 2 \
-                        --cleanup-policy Delete \
-                        --retention-time-in-hours 1 \
-                        --output none \
-                        > /dev/null 2>&1
-                    
+                echo "Creating Event Hub and Authorization Rule under the event hub..."
+                # Create the Azure Event Hub
+                az eventhubs eventhub create \
+                    --name "${myEventHubName}-${location}-${myEpoch}" \
+                    --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                    --resource-group "${myResourceGroup}-${myEpoch}" \
+                    --partition-count 2 \
+                    --cleanup-policy Delete \
+                    --retention-time-in-hours 1 \
+                    --output none \
+                    > /dev/null 2>&1
+                
                     echo "Waiting 30s for Event Hub Creation"
                     sleep 30s
 
