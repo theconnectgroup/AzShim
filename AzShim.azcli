@@ -56,12 +56,12 @@ function SimpleSetup() {
 
             az provider register --namespace 'microsoft.insights' > /dev/null
             echo "Creating resource group."
-            az group create --location "${location}" --name "${myResourceGroup}-${myEpoch}" -o table
+            az group create --location "${location}" --name "${myResourceGroup}" -o table
 
             echo "Creating Namespace..."
             az eventhubs namespace create \
-                --name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --name "${myEventHubNameSpace}-${location}" \
+                --resource-group "${myResourceGroup}" \
                 --location "${location}" \
                 --sku Basic \
                 --capacity 1 \
@@ -72,9 +72,9 @@ function SimpleSetup() {
 
             echo "Creating Event Hub and Authorization Rule under the event hub..."
             az eventhubs eventhub create \
-                --name "${myEventHubName}-${location}-${myEpoch}" \
-                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --name "${myEventHubName}-${location}" \
+                --namespace-name "${myEventHubNameSpace}-${location}" \
+                --resource-group "${myResourceGroup}" \
                 --partition-count 2 \
                 --cleanup-policy Delete \
                 --retention-time-in-hours 1 \
@@ -85,9 +85,9 @@ function SimpleSetup() {
 
             az eventhubs eventhub authorization-rule create \
                 --name "LogsToBlumira-${myEpoch}" \
-                --eventhub-name "${myEventHubName}-${location}-${myEpoch}" \
-                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                --resource-group "${myResourceGroup}-${myEpoch}" \
+                --eventhub-name "${myEventHubName}-${location}" \
+                --namespace-name "${myEventHubNameSpace}-${location}" \
+                --resource-group "${myResourceGroup}" \
                 --rights Listen \
                 --output none > /dev/null 2>&1
 
@@ -95,10 +95,10 @@ function SimpleSetup() {
             echo 'You will need the Primary Connection String and the Event Hub name to copy and paste in the sensor module within Blumira.'
             echo 'Primary Connection String:'
             az eventhubs eventhub authorization-rule keys list \
-                --resource-group "${myResourceGroup}-${myEpoch}" \
-                --eventhub-name "${myEventHubName}-${location}-${myEpoch}" \
-                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
-                --name "LogsToBlumira-${myEpoch}" --query "primaryConnectionString" -o tsv
+                --resource-group "${myResourceGroup}" \
+                --eventhub-name "${myEventHubName}-${location}" \
+                --namespace-name "${myEventHubNameSpace}-${location}" \
+                --name "LogsToBlumira" --query "primaryConnectionString" -o tsv
 
             echo 'Event Hub Name:'
             echo "${myEventHubName}-${location}-${myEpoch}"
@@ -106,14 +106,14 @@ function SimpleSetup() {
 
             mySubRuleID=$(az eventhubs namespace authorization-rule show \
                 --name "RootManageSharedAccessKey" \
-                --resource-group "${myResourceGroup}-${myEpoch}" \
-                --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
+                --resource-group "${myResourceGroup}" \
+                --namespace-name "${myEventHubNameSpace}-${location}" \
                 --query "id" -o tsv)
 
             az monitor diagnostic-settings subscription create \
-                --name "BlumiraDiagSetting-${myEpoch}" \
+                --name "BlumiraDiagSetting" \
                 --location "${location}" \
-                --event-hub-name "${myEventHubName}-${location}-${myEpoch}" \
+                --event-hub-name "${myEventHubName}-${location}" \
                 --event-hub-auth-rule "${mySubRuleID}" \
                 --logs '[{"category": "Security","enabled": true},{"category": "Administrative","enabled": true},{"category": "ServiceHealth","enabled": true},{"category": "Alert","enabled": true},{"category": "Recommendation","enabled": true},{"category": "Policy","enabled": true},{"category": "Autoscale","enabled": true},{"category": "ResourceHealth","enabled": true}]' \
                 --output none > /dev/null
