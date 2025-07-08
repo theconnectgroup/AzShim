@@ -130,7 +130,6 @@ function SimpleSetup() {
                 esac
                 break
             done
-            ;;
         esac
         break
     done
