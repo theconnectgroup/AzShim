@@ -19,11 +19,11 @@
 # where there are only Entra, Defender, Intune, etc. It also removes the -u and -s now becomes -c
 
 # Standardized Blumira Resource Group name
-myResourceGroup="DMUH-Blumira"
+myResourceGroup="Blumira-RG"
 # Statically set to reduce friction but this value can be changed to suit your preferences or needs
-myEventHubName="DMUH-Blumira-EventHub"
+myEventHubName="DMCC-Blumira-EventHub"
 # Statically set NameSpaceName
-myEventHubNameSpace="DMUH-Blumira-EventHUBNS"
+myEventHubNameSpace="DMCC-Blumira-EventHUBNS"
 # Get current subscription Ids
 tempSubList=$(az account show --query "[id]" -o tsv | awk -F '\t' '{print $1}' | sort -u)
 mySubscriptionIds=($(echo $tempSubList | tr " " "\n"))
