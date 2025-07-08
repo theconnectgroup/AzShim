@@ -127,6 +127,7 @@ function SimpleSetup() {
                         --logs '[{"category": "Security","enabled": true},{"category": "Administrative","enabled": true},{"category": "ServiceHealth","enabled": true},{"category": "Alert","enabled": true},{"category": "Recommendation","enabled": true},{"category": "Policy","enabled": true},{"category": "Autoscale","enabled": true},{"category": "ResourceHealth","enabled": true}]' \
                         --output none \
                         > /dev/null
+                    ;;
                 esac
                 break
             done
