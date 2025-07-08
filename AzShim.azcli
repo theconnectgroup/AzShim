@@ -76,7 +76,7 @@ function SimpleSetup() {
                     echo "Creating Event Hub and Authorization Rule under the event hub..."
                     # Create the Azure Event Hub
                     az eventhubs eventhub create \
-                        --name "${myEventHubName}-${location}-${myE" \
+                        --name "${myEventHubName}-${location}-${myEpoch}" \
                         --namespace-name "${myEventHubNameSpace}-${location}-${myEpoch}" \
                         --resource-group "${myResourceGroup}-${myEpoch}" \
                         --partition-count 2 \
