@@ -52,7 +52,6 @@ function SimpleSetup() {
             echo "Getting list of location codes in use within subscription. Please select a number from the list:"
             location="westus"
             startDateTime=$(date)
-            myEpoch=$(date -d "${startDateTime}" +"%s")
 
             az provider register --namespace 'microsoft.insights' > /dev/null
             echo "Creating resource group."
@@ -84,7 +83,7 @@ function SimpleSetup() {
             sleep 30s
 
             az eventhubs eventhub authorization-rule create \
-                --name "LogsToBlumira-${myEpoch}" \
+                --name "LogsToBlumira" \
                 --eventhub-name "${myEventHubName}-${location}" \
                 --namespace-name "${myEventHubNameSpace}-${location}" \
                 --resource-group "${myResourceGroup}" \
@@ -101,7 +100,7 @@ function SimpleSetup() {
                 --name "LogsToBlumira" --query "primaryConnectionString" -o tsv
 
             echo 'Event Hub Name:'
-            echo "${myEventHubName}-${location}-${myEpoch}"
+            echo "${myEventHubName}-${location}"
             echo '******************************************************************'
 
             mySubRuleID=$(az eventhubs namespace authorization-rule show \
@@ -131,7 +130,6 @@ while getopts ":hct" option; do
         ;;
     c) # simple setup
         startDateTime=$(date)
-        myEpoch=$(date -d "${startDateTime}" +"%s")
         echo "This script is intended for only NA regions only."
         echo "This script will NOT work for GCC environments."
         echo -e "\n"
