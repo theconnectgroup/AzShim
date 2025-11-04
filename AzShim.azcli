@@ -21,9 +21,9 @@
 # Standardized Blumira Resource Group name
 myResourceGroup="Blumira-RG"
 # Statically set to reduce friction but this value can be changed to suit your preferences or needs
-myEventHubName="DMC-Blumira-EventHub"
+myEventHubName="DMH-Blumira-EventHub"
 # Statically set NameSpaceName
-myEventHubNameSpace="DMC-Blumira-EventHUBNS"
+myEventHubNameSpace="DMH-Blumira-EventHUBNS"
 # Get current subscription Ids
 tempSubList=$(az account show --query "[id]" -o tsv | awk -F '\t' '{print $1}' | sort -u)
 mySubscriptionIds=($(echo $tempSubList | tr " " "\n"))
